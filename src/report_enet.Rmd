@@ -1,0 +1,94 @@
+---
+title: "Real Estate Price Prediction Using Elasticnet Regression Analysis"
+author: "Bedrock Analytics"
+date: "February 17, 2019"
+output: 
+  pdf_document:
+  #number_sections: true
+  pandoc_args: [
+      "--number-sections",
+      "--number-offset=1"
+    ]
+
+params:
+  dat_data: NA
+  
+---
+<style type="text/css">
+
+h1.title {
+  font-size: 24px;
+  font-weight: normal;
+}
+h3 {
+  font-weight:normal;
+}
+.reveal section img { 
+  background:none; 
+  border:none; 
+  box-shadow:none; 
+  }
+</style>
+
+```{r include=FALSE}
+knitr::opts_chunk$set(comment = NA)
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE, error=FALSE}
+library(caret)
+library(knitr)
+library(elasticnet)
+library(glmnet) # Package to fit ridge/lasso/elastic net models
+library(DMwR)
+library(boot) # Package to do bootstrap error estimates
+library(prettyR)
+library(xtable)
+#dat <- params$dat_data
+#knitr::kable(dat)
+``` 
+
+
+```{r,echo=F}
+dat <- read.csv(file='ason1.csv')
+
+# read chunk (does not run code)
+```{r echo=FALSE}
+read_chunk('BEDROCK-ELASTICNET-LARS_TRIMMED.R')
+read_chunk('BEDROCK-HELP-FUNC.R')
+
+dataIn <- dat
+indx <- sapply(dataIn, is.factor)
+dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
+```
+
+# Summary Statistics
+```{r  descriptive_sat, echo = FALSE}
+```
+```{r, results='asis', echo = FALSE}
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.t, 
+             digits=0,  
+             align= "|l|c|r|r|r|r|",
+             caption = "Summary statistics. Note that Mean and Std. Dev. are meaningless for categorical variables."), 
+      comment=FALSE, 
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold, 
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
+
+```
+
+```{r standardize_xy, echo=FALSE}
+```
+
+# Correlations Between Predictors
+```{r corr_plot, echo=FALSE}
+```
+
+
+
+
+
+
+
