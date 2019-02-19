@@ -152,11 +152,16 @@ shinyServer(function(input, output, session) {
   output$report <- downloadHandler(
     filename = "report.pdf",
     content = function(file) {
+      if (file.exists('report.pdf')) file.remove('report.pdf')
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
+      # Removed the tempReport option to enable reading finding of R scripts used in the generation of
+      # the report. 
+      #tempReport <- file.path(tempdir(), "report.Rmd")
+      
+      tempReport <- "report_enet.Rmd"  
+      #file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
       dataIn <- read.csv(input$file1$datapath,
