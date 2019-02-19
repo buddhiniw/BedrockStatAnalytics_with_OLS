@@ -4,7 +4,7 @@ author: "Bedrock Analytics"
 date: "February 17, 2019"
 output: 
   pdf_document:
-  #number_sections: true
+    fig_caption: yes
   pandoc_args: [
       "--number-sections",
       "--number-offset=1"
@@ -49,11 +49,11 @@ library(xtable)
 ``` 
 
 
-```{r,echo=F}
+```{r, echo=FALSE}
+# Load data file
 dat <- read.csv(file='ason1.csv')
-
 # read chunk (does not run code)
-```{r echo=FALSE}
+
 read_chunk('BEDROCK-ELASTICNET-LARS_TRIMMED.R')
 read_chunk('BEDROCK-HELP-FUNC.R')
 
@@ -61,34 +61,47 @@ dataIn <- dat
 indx <- sapply(dataIn, is.factor)
 dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
+Input data file 
 
 # Summary Statistics
-```{r  descriptive_sat, echo = FALSE}
+```{r  descriptive_stat, results='asis', echo = FALSE}
+# Sumary of unscaled predictor (x) variables  
 ```
-```{r, results='asis', echo = FALSE}
-bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
-print(xtable(data.t, 
-             digits=0,  
-             align= "|l|c|r|r|r|r|",
-             caption = "Summary statistics. Note that Mean and Std. Dev. are meaningless for categorical variables."), 
-      comment=FALSE, 
-      sanitize.colnames.function=bold,
-      sanitize.rownames.function=bold, 
-      booktabs=F,
-      floating = TRUE, latex.environments = "center")
 
-```
 
 ```{r standardize_xy, echo=FALSE}
+# standardiize xy variables
 ```
 
 # Correlations Between Predictors
 ```{r corr_plot, echo=FALSE}
+# Plot the correlations between predictors
 ```
 
+# Tuning Parmenter Selection Using Leave-One-Out Cross Validation
+```{r loocv, echo=FALSE, fig.width=7,fig.height=6,fig.cap="\\label{fig:figs}plotting example"}
+# results from Loocv
+```
+`r sprintf("From above plot, lambda =%.2f and s =%.2f gives the minimum RMSE model."
+                        ,best.lambda, best.fraction) `
 
 
+# Variable Importance
+```{r var_importance,results='asis',echo=F,warning=F}
+#print(plot(varImp(train.enet)))
+```
+
+# Standardized Model Coefficients
+```{r  best_model, echo = F}
+```
+```{r  predict_coef, echo = F, results='asis', echo = FALSE}
+```
+
+NOTE errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.
 
 
+# Model Prediction
+```{r predict_price, echo = F, results ='asis'}
+```
 
 

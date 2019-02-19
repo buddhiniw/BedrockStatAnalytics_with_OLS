@@ -1,13 +1,15 @@
 #############################
 #  This R code uses Gaussian linear regression with Elastic Net regularization to predict
-#  real estate selling prices. 
-# 
+#  real estate selling prices. Apart from the analysis, most display functionality has been stripped down 
+#  from the original format to enable embedding in RMarkdown. The original code can be found:
+#  https://github.com/buddhiniw/BEDROCK-ELNET
+#
 #  Reference - "Regularization and variable selection via the elastic net"
 #  Hui Zou and Trevor Hastie
 #  J. R. Statist. Soc. B (2005) 67 , Part 2 , pp. 301–320
 # 
 #  
-#  R script author - B. Waidyawansa (10/10/2018)
+#  R script author - B. Waidyawansa (2/18/2019)
 #############################
 
 
@@ -72,7 +74,7 @@ dataIn.scaled.test <- x.scaled[nrow(x.scaled),]
 x.test <-as.matrix(dataIn.scaled.test)
 
 
-## @knitr train_model
+## @knitr loocv
 ###################################################################
 # Use caret package to train the elasticnet model to get the 
 # best parameter values for lambda(weight decay) and s(fraction).
@@ -116,14 +118,15 @@ train.enet = train(
     trControl = train.control
 )
 
-
 # Plot CV performance
-plot(train.enet)
+par(mar = c(5,5,6,5))
+plot(train.enet,plotType = "line", xlab="Fraction (s)",scales=list(x=list(cex=0.75), y=list(cex=0.75)))
+trellis.par.set(caretTheme())
 
-# Retrun best tuning parameters lambda and alpha
 best.fraction <- train.enet$bestTune$fraction
 best.lambda <- train.enet$bestTune$lambda
 
+## @knitr best_model
 # Get model prediction error(RMSE) from the best tune
 best = which(rownames(train.enet$results) == rownames(train.enet$bestTune))
 best.result = train.enet$results[best, ]
@@ -153,10 +156,4 @@ y.hat.enet.scaled <- predict.enet(final.enet.model,
 # Unscale to get the actual magnitude
 y.hat.enet.unscaled <- unscale(y.hat.enet.scaled$fit,dataIn.y.scaled)
 
-
-#########################################
-
-
-source(file.path(working.dir, "BEDROCK-HELP-FUNC.R"))
-#source(file.path(working.dir, "BEDROCK-DOC.R"))
 

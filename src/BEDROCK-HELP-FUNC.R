@@ -9,48 +9,77 @@ library(officer)
 library(tidyverse)
 library(prettyR)
 
-# Descriptive Statistics
-## @knitr descriptive_sat
 
+## @knitr descriptive_stat
+###################################################################
+# Descriptive statistics from unscaled data
+###################################################################
 # Get the original data frame minus the test data set
 df<-dataIn[1:(nrow(dataIn)-1),]
 data <- as.data.frame(describe(df ,num.desc=c("valid.n","mean","sd","min","max"))$Numeric)
 data.t <- as.matrix(t(data))
 data.t <- formatC(data.t, digits = 2, format = "d", flag = "0")
 colnames(data.t) <- c("N", "Mean", "Std. Dev.", "Min","Max")
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.t, 
+             align= "|l|c|r|r|r|r|",
+             caption = "Summary statistics. Note that Mean and Std. Dev. are meaningless for categorical variables."), 
+      comment=FALSE, 
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold, 
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
 
-# Correlations between predictors
+
 ## @knitr corr_plot
+###################################################################
+# Check for correlations between predictors
+###################################################################
 corrplot::corrplot(cov(as.matrix(x.scaled)),method = "number")
-#dev.off()
+
+
+
+## @knitr var_importance
+###################################################################
+# Plot Variable Importance
+###################################################################
+print(plot(varImp(train.enet)))
+
+###################################################################
+# Make predictions using the final model selected by caret
+###################################################################
+# Predict coefficients
+## @knitr predict_coef
+data.c <- as.matrix(beta.hat.enet.scaled$coefficients)
+data.c <- formatC(data.c, digits = 3, format = "f", flag = "0")
+colnames(data.c) <- c("Estimate")
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.c,
+             align = "|l|r|"),
+      comment=FALSE,
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold,
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
+
+
+# Predicted Price
+## @knitr predict_price
+data.p <- as.matrix(cbind(y.hat.enet.unscaled,prediction.error, prediction.rsquared))
+data.p <- formatC(data.p, digits = 3, format = "f", flag = "0")
+colnames(data.p) <- c("Predicted Value", "Prediction Error", "R2")
+rownames(data.p) <- c("")
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.p,
+             align = "|l|r|r|r|"),
+      inculde.rownames = FALSE,
+      comment=FALSE,
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold,
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
 
 
 
 
-
-# create flextable of coefficients from enet without errors
-flextable.enet.coef <- function(beta.hat.scaled) {
-  
-  data <- as.matrix(beta.hat.scaled$coefficients)
-  # format the data values
-  ftable <- flextable(rownames_to_column(as.data.frame(data)))
-  ftable <- set_header_labels(ftable,rowname = "Variable", V1="Estimate")
-  
-  ftable <- fontsize(ftable, size = 12, part = "all")
-  ftable <- autofit(ftable)
-  ftable <- theme_zebra(ftable)
-  
-}
-
-
-# create a FlexTable of predicted value and prediction error
-flextable.predict <- function(value,error, r2){
-  data <- as.matrix(cbind(value,error,r2))
-  ftable <- flextable(as.data.frame(data))
-  ftable <- set_header_labels(ftable,V1 = "Predicted Value", error="Error", r2 = "R2")
-  
-  ftable <- fontsize(ftable, size = 12, part = "all")
-  ftable <- autofit(ftable)
-  ftable <- theme_zebra(ftable)
-}
 
