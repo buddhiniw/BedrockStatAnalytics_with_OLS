@@ -38,9 +38,13 @@ library(boot) # Package to do bootstrap error estimates
 #dat <- read.csv(file='\data\Church_mod.csv')
 knitr::kable(dat)
 
+#read_chunk('~/MyWork/Upwork/R_bedrock_gui/PDF_Report/Bedrock-Add-OLS/src/BEDROCK-ELASTICNET-LARS_TRIMMED.R')
+read_chunk('BEDROCK-HELP-FUNC.R')
+
 ```
-
-
+```{r, echo = T}
+print(getwd())
+```
 ### Descriptive Summary Statistics
 ```{r,echo=F}
 # The `params` object is available in the document.
