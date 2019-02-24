@@ -8,7 +8,8 @@ library(flextable)
 library(officer)
 library(tidyverse)
 library(prettyR)
-
+library(knitr)
+library(broom)
 
 ## @knitr descriptive_stat
 ###################################################################
@@ -31,26 +32,13 @@ print(xtable(data.t,
       floating = TRUE, latex.environments = "center")
 
 
-## @knitr corr_plot
-###################################################################
-# Check for correlations between predictors
-###################################################################
-corrplot::corrplot(cov(as.matrix(x.scaled)),method = "number")
-
-
-
-## @knitr var_importance
-###################################################################
-# Plot Variable Importance
-###################################################################
-print(plot(varImp(train.enet)))
-
 ###################################################################
 # Make predictions using the final model selected by caret
 ###################################################################
 # Predict coefficients
-## @knitr predict_coef
-data.c <- as.matrix(beta.hat.enet.scaled$coefficients)
+## @knitr coef_tble
+data.c <- as.matrix(beta.hat$coefficients)
+
 data.c <- formatC(data.c, digits = 3, format = "f", flag = "0")
 colnames(data.c) <- c("Estimate")
 bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
@@ -63,9 +51,24 @@ print(xtable(data.c,
       floating = TRUE, latex.environments = "center")
 
 
+## @knitr ols_coef_tble
+data.c <- as.matrix(beta.hat)
+
+data.c <- formatC(data.c, digits = 3, format = "f", flag = "0")
+#colnames(data.c) <- c("Estimate")
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.c,
+             align = "|l|r|r|r|r|r|"),
+      comment=FALSE,
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold,
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
+
+
 # Predicted Price
 ## @knitr predict_price
-data.p <- as.matrix(cbind(y.hat.enet.unscaled,prediction.error, prediction.rsquared))
+data.p <- as.matrix(cbind(y.hat,prediction.error, prediction.rsquared))
 data.p <- formatC(data.p, digits = 3, format = "f", flag = "0")
 colnames(data.p) <- c("Predicted Value", "Prediction Error", "R2")
 rownames(data.p) <- c("")
@@ -78,6 +81,7 @@ print(xtable(data.p,
       sanitize.rownames.function=bold,
       booktabs=F,
       floating = TRUE, latex.environments = "center")
+
 
 
 

@@ -20,8 +20,12 @@ library(DMwR)
 library(boot) # Package to do bootstrap error estimates
 library(elasticnet)
 library(rstudioapi)
+library(knitr)
 # Clean up the directory
 rm(list=ls())
+
+#dataIn <- read.csv(file='/home/buddhini/MyWork/Upwork/R_bedrock_gui/PDF_Report/Bedrock-Add-OLS/src/ason1.csv')
+
 
 ## @knitr standardize_xy
 ###################################################################
@@ -34,12 +38,11 @@ rm(list=ls())
 # DONOT scale factor variables (using 1/0) used for yes/no situations.
 #
 # NOTE - We cannot use the preProcess option in the caret package to do the scaling 
-# because the real estate datasets contain factor variables.
+# because real estate datasets contain factor variables.
 #
-###############################b
-# Scale x (predictor) variables
-###############################
 # Get x variables (including the data-to-be-predicted row)
+# 
+# Scale x varibles
 dataIn.x <- dataIn[,-1]
 
 # Identify columns with categorical data (0/1)
@@ -50,9 +53,8 @@ dataIn.catrgorical <- dataIn.x[cat.vars]
 # Now scale the continuous variables 
 dataIn.continuous.scaled <-scale(dataIn.continuous,center=TRUE, scale=TRUE)
 
-# Create the scaled x matrix
-x.scaled <- cbind(as.data.frame(dataIn.continuous.scaled),dataIn.catrgorical)
-
+# Create the scaled x 
+x.scaled <- cbind(dataIn.continuous.scaled,dataIn.catrgorical)
 
 ###############################
 # Scale y (responce) variable
@@ -65,6 +67,7 @@ y.scaled <- as.data.frame(dataIn.y.scaled)
 x <- as.matrix(x.scaled[1:(nrow(x.scaled)-1),])
 y <- as.matrix(y.scaled)
 
+
 ###################################################################
 # Get the scaled test data set.
 # This program assumes the test data are in the last row of the input
@@ -72,6 +75,13 @@ y <- as.matrix(y.scaled)
 ###################################################################
 dataIn.scaled.test <- x.scaled[nrow(x.scaled),]
 x.test <-as.matrix(dataIn.scaled.test)
+
+
+## @knitr corr_plot
+###################################################################
+# Check for correlations between predictors
+###################################################################
+corrplot::corrplot(cor(as.matrix(dataIn.x)),method = "number",type = "upper",number.cex=1.5)
 
 
 ## @knitr loocv
@@ -118,6 +128,7 @@ train.enet = train(
     trControl = train.control
 )
 
+
 # Plot CV performance
 par(mar = c(5,5,6,5))
 plot(train.enet,plotType = "line", xlab="Fraction (s)",scales=list(x=list(cex=0.75), y=list(cex=0.75)))
@@ -125,6 +136,12 @@ trellis.par.set(caretTheme())
 
 best.fraction <- train.enet$bestTune$fraction
 best.lambda <- train.enet$bestTune$lambda
+
+###################################################################
+# Variable importance
+###################################################################
+## @knitr var_importance
+plot(varImp(train.enet))
 
 ## @knitr best_model
 # Get model prediction error(RMSE) from the best tune
@@ -140,7 +157,7 @@ prediction.rsquared <-best.result$Rsquared
 final.enet.model <- train.enet$finalModel
 
 # Get the model coefficients at optimal lambda from the final model
-beta.hat.enet.scaled <- predict.enet(final.enet.model,
+beta.hat <- predict.enet(final.enet.model,
                                      s=best.fraction,
                                      type="coefficient",
                                      mode="fraction")
@@ -155,5 +172,7 @@ y.hat.enet.scaled <- predict.enet(final.enet.model,
                                   mode="fraction")
 # Unscale to get the actual magnitude
 y.hat.enet.unscaled <- unscale(y.hat.enet.scaled$fit,dataIn.y.scaled)
+y.hat <- y.hat.enet.unscaled # to make it easy to pass into help functions.
+
 
 

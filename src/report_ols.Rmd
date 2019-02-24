@@ -1,160 +1,109 @@
 ---
-title: "Ordinary Least Square Regression Analysis Report"
-author: "Bedrock Analytics"
-output: pdf_document 
+title: "Real Estate Price Prediction Using Ordinary Lease Squares Regression (n > p)"
+author: "Bedrock Stat Analytics"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: 
+  pdf_document:
+    fig_caption: yes
+  pandoc_args: [
+      "--number-sections",
+      "--number-offset=1"
+    ]
+
+header-includes:
+- \usepackage{pdflscape}
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
 
 params:
   dat_data: NA
+  dat_file: NA
 ---
-<style type="text/css">
 
-h1.title {
-  font-size: 24px;
-  font-weight: normal;
-}
-h3 {
-  font-weight:normal;
-}
-.reveal section img { 
-  background:none; 
-  border:none; 
-  box-shadow:none; 
-  }
-</style>
 ```{r include=FALSE}
 knitr::opts_chunk$set(comment = NA)
 ```
-### Raw Data Summary
-```{r ,echo=F}
-dat <- params$dat_data
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE, error=FALSE}
 library(caret)
 library(knitr)
 library(elasticnet)
-library(glmnet) # Package to fit ridge/lasso/elastic net models
+#library(glmnet) # Package to fit ridge/lasso/elastic net models
 library(DMwR)
-library(boot) # Package to do bootstrap error estimates
-
-#dat <- read.csv(file='Church_mod.csv')
-knitr::kable(dat)
-
+#library(boot) # Package to do bootstrap error estimates
+library(prettyR)
+library(xtable)
+library(kableExtra)
+library(broom)
 ```
 
-
-### Descriptive Summary Statistics
 ```{r,echo=F}
-# The `params` object is available in the document.
-statistics_table <- summary(dat)
-statistics_table
-#statistics_table <- statistics_table[-c(2,5),]
-#statistics_table
+#dat <- params$dat_data
+#name <- params$dat_file
+#knitr::kable(dat)
+``` 
+
+```{r cache=FALSE, echo=FALSE}
+read_chunk('BEDROCK-OLS.R')
+read_chunk('BEDROCK-HELP-FUNC.R')
 ```
 
-
-```{r,echo=F}
+```{r, echo=FALSE}
+# Load data file
+dat <- params$dat_data
+#dat <- read.csv(file='20_Obs_LL.csv')
+# read chunk (does not run code)
 dataIn <- dat
+dataIn <- dataIn[ , !names(dataIn) %in% c("MezzanineYes1")]
 indx <- sapply(dataIn, is.factor)
 dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
-dataIn.x <- dataIn[,-1]
-cat.vars <- apply(dataIn.x,2,function(x) { all(x %in% 0:1) })
-dataIn.continuous <- dataIn.x[!cat.vars]
-dataIn.catrgorical <- dataIn.x[cat.vars]
-dataIn.continuous.scaled <-scale(dataIn.continuous,center=TRUE, scale=TRUE)
-x.scaled <- cbind(as.data.frame(dataIn.continuous.scaled),dataIn.catrgorical)
-dataIn.y <- dataIn[1:(nrow(dataIn)-1),1,drop=FALSE]
-dataIn.y.scaled <- scale(dataIn.y,center=TRUE, scale=TRUE)
-y.scaled <- as.data.frame(dataIn.y.scaled)
-x <- as.matrix(x.scaled[1:(nrow(x.scaled)-1),])
-y <- as.matrix(y.scaled)
-dataIn.scaled.test <- x.scaled[nrow(x.scaled),]
-x.test <-as.matrix(dataIn.scaled.test)
-```
-
-### Correlations Between Predictors
-```{r,echo=F}
-corrplot::corrplot(cov(as.matrix(x.scaled)),method = "number")
-```
-
-```{r,echo=F}
-lambda.grid <- c(0,0.01,0.1,1,10,100)
-#lambda.grid <- seq(0,10,by = 1)
-s.grid <- seq(0,1,by=0.05)
-train.control = trainControl(method = "LOOCV")
-search.grid <- expand.grid(.fraction = s.grid, .lambda = lambda.grid)
-dataIn.scaled <- cbind(y,x)
-dataIn.scaled <- na.omit(dataIn.scaled)
-set.seed(42)
-
-train.enet = train(
-  x.scaled[1:(nrow(x.scaled)-1),], y.scaled[[1]],
-  method = "enet",
-  metric = "RMSE",
-  tuneGrid = search.grid,
-  normalize = FALSE,
-  intercept = FALSE,
-  trControl = train.control
-)
-```
-
-### Tuning Parmenter Selection Using Leave-One-Out Cross Validation
-```{r,echo=F}
-plot(train.enet,xlab="Fraction of L1-norm(s)")
 ```
 
 
-```{r,echo=F}
-
-
-best.fraction <- train.enet$bestTune$fraction
-best.lambda <- train.enet$bestTune$lambda
-best = which(rownames(train.enet$results) == rownames(train.enet$bestTune))
-best.result = train.enet$results[best, ]
-rownames(best.result) = NULL
-prediction.error <- best.result$RMSE
-prediction.rsquared <-best.result$Rsquared
-final.enet.model <- train.enet$finalModel
-beta.hat.enet.scaled <- predict.enet(final.enet.model,
-    s=best.fraction,
-    type="coefficient",
-    mode="fraction")
-y.hat.enet.scaled <- predict.enet(final.enet.model,
-    as.data.frame(x.test),
-    s=best.fraction,
-    type="fit",
-    mode="fraction")
-y.hat.enet.unscaled <- unscale(y.hat.enet.scaled$fit,dataIn.y.scaled)
-
+# Summary Statistics
+```{r  descriptive_stat, results='asis', echo = FALSE, message=FALSE}
+# Sumary of unscaled predictor (x) variables  
 ```
-### Variable Importance
-```{r, warning=F,echo=F}
-plot(varImp(train.enet))
+```{r ols_preprocess, echo=FALSE}
+# Pre-process
 ```
 
-```{r,echo=F}
-data <- as.matrix(beta.hat.enet.scaled$coefficients)
-data <- formatC(data, digits = 6, format = "f", flag = "0")
-k <- row.names(data)
-data <- data.frame(data)
-#data <- cbind(Row.Names= row.names(data),data)
-colnames(data)<-c('Coefficient')
-
-```
-### Standardized Model Coefficients
-```{r,echo=F}
-s_m_c <- knitr::kable(data)
-s_m_c
+# Correlations Between Predictors
+```{r ols_cor_plot, echo=FALSE, fig.height=12,fig.width=12}
+# Plot the correlations between predictors
 ```
 
-```{r,echo=F}
-data <- as.matrix(cbind(y.hat.enet.unscaled,prediction.error,prediction.rsquared))
-data <- formatC(data, digits = 3, format = "f", flag = "0")
-k <- row.names(data)
-data <- data.frame(data)
-data <- cbind(Row.Names= row.names(data),data)
-colnames(data)<-c("","Predicted Value", "Prediction Error", "R2")
+# Variable Importance
+```{r  make_model, echo = F}
+```
+```{r var_importance, echo=FALSE,fig.height=10,fig.width=10}
+# get varible importance
+```
+```{r  best_model, echo = FALSE}
 ```
 
-### Model Prediction
-```{r,echo=F}
-m_p <- knitr::kable(data)
-m_p
+# Standardized Model Coefficients
+```{r  ols_coef, echo = FALSE}
 ```
+```{r  ols_coef_tble, results ='asis', echo = FALSE}
+```
+# Model Prediction
+```{r predict_price, echo = FALSE, results ='asis'}
+```
+
+
+\newpage
+# Appendix
+\blandscape 
+Appendix
+```{r, echo=FALSE}
+knitr::kable(dat, 
+             format = "latex",
+             booktabs = TRUE,
+             caption = "Raw data table") %>%
+kableExtra::kable_styling(latex_options = c("repeat_header"), font_size = 7) 
+``` 
+\elandscape 
