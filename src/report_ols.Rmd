@@ -41,20 +41,19 @@ library(broom)
 ```
 
 ```{r,echo=F}
-#dat <- params$dat_data
-#name <- params$dat_file
-#knitr::kable(dat)
+dat <- params$dat_data
+name <- params$dat_file
 ``` 
 
 ```{r cache=FALSE, echo=FALSE}
 read_chunk('BEDROCK-OLS.R')
 read_chunk('BEDROCK-HELP-FUNC.R')
 ```
+`r sprintf("Using Data file - %s.",name) `
 
 ```{r, echo=FALSE}
 # Load data file
 dat <- params$dat_data
-#dat <- read.csv(file='20_Obs_LL.csv')
 # read chunk (does not run code)
 dataIn <- dat
 dataIn <- dataIn[ , !names(dataIn) %in% c("MezzanineYes1")]
@@ -77,7 +76,7 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
 
 # Variable Importance
-```{r  make_model, echo = F}
+```{r  make_model, echo = F,fig.width=5,fig.height=5}
 ```
 ```{r var_importance, echo=FALSE,fig.height=10,fig.width=10}
 # get varible importance
@@ -95,15 +94,13 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
 
 
-\newpage
-# Appendix
+
 \blandscape 
-Appendix
 ```{r, echo=FALSE}
 knitr::kable(dat, 
              format = "latex",
              booktabs = TRUE,
-             caption = "Raw data table") %>%
+             caption = "APPENDIX : Raw data table") %>%
 kableExtra::kable_styling(latex_options = c("repeat_header"), font_size = 7) 
 ``` 
 \elandscape 

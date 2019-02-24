@@ -9,16 +9,17 @@ library(corrplot)
 library(officer)
 library(rmarkdown)
 library(latexpdf)
+library(kableExtra)
 
 
 shinyServer(function(input, output, session) {
   
-  # Create the object with no values
+  # Create a reactive object with no values
   current_user_status <- reactiveValues()
-  # Set default values
   current_user_status$logged <- FALSE
   current_user_status$current_user <- NULL
   current_user_status$access <- NULL
+  current_user_status$report <- NULL
   
   
   output$ui_page_1 <- renderUI({
@@ -49,7 +50,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  output$ui_page_2 <- renderUI({
+  output$ui_opt_enet <- renderUI({
     if(current_user_status$logged == TRUE){
       if("access_to_page_1" %in% current_user_status$access){
         tagList(
@@ -71,7 +72,33 @@ shinyServer(function(input, output, session) {
     }
     
   })
-
+  
+  
+  output$ui_opt_ols <- renderUI({
+    if(current_user_status$logged == TRUE){
+      if("access_to_page_1" %in% current_user_status$access){
+        tagList(
+          verticalLayout(
+            downloadButton("report","Download PDF Report")
+            #div("To save as pdf: After downloading, open file in browser click print and save as pdf",style="color:red")
+          )
+        )  
+      } else {
+        tagList(
+          div("No access to this part.", style="color:purple")
+        )
+      }
+      
+    } else {
+      tagList(
+        div("Please log in", style="color:red")
+      )
+    }
+    
+  })
+  
+  
+  
   
   output$data_1_for_authorized_user <- renderTable({
     head(iris)
@@ -128,26 +155,28 @@ shinyServer(function(input, output, session) {
     return(df)
   })
   
-  output$statistics <- renderDataTable({
-    req(input$file1)
-    tryCatch(
-      {
-        dataIn <- read.csv(input$file1$datapath,
-                           header = T)
-        statistics_table <- summary(dataIn)
-        statistics_table <- statistics_table[-c(2,5),]
-        
-      },
-      error = function(e) {
-        # return a safeError if a parsing error occurs
-        stop(safeError(e))
-      }
-    )
-    
-    return(statistics_table)
+  
+  
+
+  # reportType <- function(){
+  #   observe({
+  #     if (req(input$start) == "Elastic Net Regression (n < p)")
+  #       report <- "report_enet.Rmd" 
+  #     if (req(input$start) == "OLS Regression (n > p)")
+  #       report <- "report_ols.Rmd" 
+  #   }
+  #   )
+  #   return(report)
+  # }
+ 
+  observe({
+    if (req(input$start) == "Elastic Net Regression (n < p)")
+      current_user_status$report <- "report_enet.Rmd" 
+    if (req(input$start) == "OLS Regression (n > p)")
+      current_user_status$report <-"report_ols.Rmd"
     
   })
-  
+   
 
   output$report <- downloadHandler(
     filename = "report.pdf",
@@ -159,14 +188,15 @@ shinyServer(function(input, output, session) {
       # Removed the tempReport option to enable reading finding of R scripts used in the generation of
       # the report. 
       #tempReport <- file.path(tempdir(), "report.Rmd")
+      tempReport <- current_user_status$report 
       
-      tempReport <- "report_enet.Rmd"  
+       #tempReport <- "report_ols.Rmd"  
       #file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
       dataIn <- read.csv(input$file1$datapath,
                          header = T)
-      params <- list(dat_data = dataIn)
+      params <- list(dat_data = dataIn, dat_file = input$file1$name)
       
       # Knit the document, passing in the `params` list, and eval it in a
       # child of the global environment (this isolates the code in the document
@@ -179,8 +209,6 @@ shinyServer(function(input, output, session) {
       
     }
   )
-  
-  
-  
+
   
 })

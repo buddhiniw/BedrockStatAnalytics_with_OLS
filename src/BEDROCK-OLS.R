@@ -20,7 +20,7 @@ library("PerformanceAnalytics")
 # Clean up the directory
 rm(list=ls())
 
-dataIn <- read.csv(file='/home/buddhini/MyWork/Upwork/R_bedrock_gui/PDF_Report/Bedrock-Add-OLS/src/20_Obs_LL.csv')
+#dataIn <- read.csv(file='/home/buddhini/MyWork/Upwork/R_bedrock_gui/PDF_Report/Bedrock-Add-OLS/src/20_Obs_LL.csv')
 dataIn <- dataIn[ , !names(dataIn) %in% c("MezzanineYes1")]
 
 ## @knitr ols_preprocess
@@ -48,7 +48,7 @@ dataIn.full <- cbind(dataIn.y,dataIn.x)
 # This program assumes the test data are in the last row of the input
 # dataset
 ###################################################################
-dataIn.test <- dataIn.x[nrow(dataIn.x),]
+dataIn.test <- dataIn[nrow(dataIn),-1]
 x.test <-as.matrix(dataIn.test)
 
 ## @knitr make_model

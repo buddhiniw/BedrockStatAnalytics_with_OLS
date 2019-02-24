@@ -5,6 +5,7 @@ library(shinythemes)
 ui <- fluidPage( theme=shinytheme("cosmo"),
   titlePanel("Bedrock Stat Analytics"),
   navbarPage("Get Started!",
+             id = "start",
              tabPanel("Login",
                       wellPanel(
                         textInput("user",
@@ -31,13 +32,17 @@ ui <- fluidPage( theme=shinytheme("cosmo"),
              
              navbarMenu("Analysis",
                         tabPanel("Elastic Net Regression (n < p)",
-                                wellPanel(
-                                uiOutput("ui_page_2")
+                                 wellPanel(
+                                  uiOutput("ui_opt_enet")
                                 )),
                         tabPanel("OLS Regression (n > p)",
                                 wellPanel(
-                                uiOutput("ui_page_3")
+                                  uiOutput("ui_opt_ols")
                                 ))
                         )
+        
   )
+  
+  
+
 )
