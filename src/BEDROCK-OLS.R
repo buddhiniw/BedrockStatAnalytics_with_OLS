@@ -1,7 +1,5 @@
 #############################
 #  This R code uses ordinarlt least squares linear regression to predict real estate selling prices for n>p case. 
-#
-#  
 #  R script author - B. Waidyawansa (2/20/2019)
 #############################
 
