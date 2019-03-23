@@ -13,13 +13,9 @@ library(knitr)
 library(tidyr)
 library(ggplot2)
 library(e1071)          # Explore the Skewness of various features of the dataset.
-library("PerformanceAnalytics")
 
 # Clean up the directory
 rm(list=ls())
-
-#dataIn <- read.csv(file='/home/buddhini/MyWork/Upwork/R_bedrock_gui/PDF_Report/Bedrock-Add-OLS/src/20_Obs_LL.csv')
-dataIn <- dataIn[ , !names(dataIn) %in% c("MezzanineYes1")]
 
 ## @knitr ols_preprocess
 # Seperate the target variable (y) and the preictors (x)
