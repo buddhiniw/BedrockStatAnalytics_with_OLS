@@ -1,0 +1,131 @@
+---
+title: "Real Estate Price Prediction Using Elastic Net Regression Analysis"
+author: "Bedrock Stat Analytics"
+date: "February 17, 2019"
+output: 
+  pdf_document:
+    fig_caption: yes
+  pandoc_args: [
+      "--number-sections",
+      "--number-offset=1"
+    ]
+
+header-includes:
+- \usepackage{pdflscape}
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+
+params:
+  dat_data: NA
+  dat_file: NA
+
+---
+<style type="text/css">
+
+h1.title {
+  font-size: 24px;
+  font-weight: normal;
+}
+h3 {
+  font-weight:normal;
+}
+.reveal section img { 
+  background:none; 
+  border:none; 
+  box-shadow:none; 
+  }
+</style>
+
+```{r include=FALSE}
+knitr::opts_chunk$set(comment = NA)
+```
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE, error=FALSE}
+library(caret)
+library(knitr)
+library(elasticnet)
+library(DMwR)
+library(prettyR)
+library(xtable)
+library(kableExtra)
+```
+
+```{r,echo=F}
+dat <- params$dat_data
+name <- params$dat_file
+``` 
+`r sprintf("Using Data file - %s.",name) `
+
+```{r cache=FALSE, echo=FALSE}
+read_chunk('BEDROCK-ELASTICNET-LARS_TRIMMED.R')
+read_chunk('BEDROCK-HELP-FUNC.R')
+```
+
+```{r, echo=FALSE}
+# Load data file
+dat <- params$dat_data
+# read chunk (does not run code)
+dataIn <- dat
+indx <- sapply(dataIn, is.factor)
+dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
+```
+
+# Data quality checks
+```{r check_data, results='asis', echo = FALSE, message=FALSE}
+# Sumary of data quality checks 
+```
+
+
+# Summary Statistics
+```{r  descriptive_stat, results='asis', echo = FALSE, message=FALSE}
+# Sumary of unscaled predictor (x) variables  
+```
+```{r standardize_xy, echo=FALSE}
+# standardiize xy variables
+```
+
+# Correlations Between Predictors
+```{r corr_plot, echo=FALSE, fig.height=12,fig.width=12}
+# Plot the correlations between predictors
+```
+
+# Tuning Parmenter Selection Using Leave-One-Out Cross Validation
+```{r loocv, echo=FALSE, warning = FALSE, fig.width=7,fig.height=6}
+# results from Loocv
+```
+`r sprintf("From above plot, lambda =%.2f and s =%.2f gives the minimum RMSE model."
+                        ,best.lambda, best.fraction) `
+
+
+# Variable Importance
+```{r var_importance,results='asis',echo=F,warning=F, fig.width=5,fig.height=5}
+```
+
+Rank of variables by Importance using Caret R Package. All measures of importance are scaled to have a maximum value of 100.
+
+# Standardized Model Coefficients
+```{r  best_model, echo = F}
+```
+```{r  predict_coef, echo = F, results='asis', echo = FALSE}
+```
+```{r  coef_tble, echo = F, results='asis', echo = FALSE}
+```
+NOTE errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.
+
+
+# Model Prediction
+```{r predict_price, echo = F, results ='asis'}
+```
+
+
+\blandscape 
+```{r, echo=FALSE}
+knitr::kable(dat, 
+             format = "latex",
+             booktabs = TRUE,
+             caption = "APPENDIX : Raw data table") %>%
+kableExtra::kable_styling(latex_options = c("repeat_header"), font_size = 7) 
+``` 
+\elandscape 
