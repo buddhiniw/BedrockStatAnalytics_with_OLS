@@ -123,31 +123,51 @@ shinyServer(function(input, output, session) {
   #check the regression type and assign the correct RMD file
   reportType <- eventReactive(input$analyze, {
     # default
-    user_input$report <- "report_enet_html.Rmd"
-    # select based on user input
-    if (req(input$reg_opt) == "Elasticnet (n<p)")
-      user_input$report <- "report_enet_html.Rmd"
-    if (req(input$reg_opt) == "OLS (n>p)")
+    user_input$report <- "report_enet.Rmd"
+    user_input$htmlout <- "enet_html.Rmd"
+    
+    # select pdf/html layout based on user input
+    if (req(input$reg_opt) == "Elasticnet (n<p)"){
+      user_input$report <- "report_enet.Rmd"
+      user_input$htmlout <- "enet_html.Rmd"
+    }
+    if (req(input$reg_opt) == "OLS (n>p)"){
       user_input$report <-"report_ols.Rmd"
+      user_input$htmlout <-"report_ols.Rmd"
+    }
   })
 
 
+  
+  
   # Analyze data when button is clicked.
   observeEvent(input$analyze, {
     
-    GenerateReport()
+    generateHTML()
     
     # insert a tab for results
     insertTab(inputId = "tabs",
-              tabPanel("Results", includeHTML("report_enet_html.html")),
+              tabPanel("Results", includeHTML("enet_html.html")),
               target = "Input Data",
               position = "after"
     )
   })
 
+  # Generate html output
+  generateHTML <- reactive({
+    dataIn <- read.csv(input$file1$datapath,header = T)
+    params <- list(dat_data = dataIn, dat_file = input$file1$name)
+    reportType()
+    tempHTML <- user_input$htmlout
+    rmarkdown::render(tempHTML,
+                      params = params,
+                      envir = new.env(parent = globalenv()))
+    
+    
+  })
 
-  # Generate report
-  GenerateReport <- reactive({
+  # Generate pdf report
+  generateReport <- reactive({
     # Set up parameters to pass to Rmd document
     dataIn <- read.csv(input$file1$datapath,header = T)
     #print(input$file1$datapath)
@@ -158,7 +178,7 @@ shinyServer(function(input, output, session) {
     tempReport <- user_input$report
     #tempReport <- reportType()
     #print(tempReport)
-    rmarkdown::render(tempReport,c("html_document", "pdf_document"),
+    rmarkdown::render(tempReport,"pdf_document",
                       params = params,
                       envir = new.env(parent = globalenv()))
 
@@ -166,9 +186,11 @@ shinyServer(function(input, output, session) {
 
   
   output$bedrock_analytics_report <- downloadHandler(
+
     filename = "bedrock_analytics_report.pdf",
     content = function(file) {
       # use file.copy to provide the file "in" the save-button
+      generateReport()
       file.copy("report_enet.pdf", file)
     }
   )
@@ -180,7 +202,7 @@ shinyServer(function(input, output, session) {
   #**************************************************
   # reactive value containing user's authentication status
   user_input <- reactiveValues(authenticated = FALSE, valid_credentials = FALSE, 
-                               user_locked_out = FALSE, status = "", report="")
+                               user_locked_out = FALSE, status = "", report="", htmlout="")
   
   # dataframe that holds usernames, passwords and other user data
   user_db <- data.frame(

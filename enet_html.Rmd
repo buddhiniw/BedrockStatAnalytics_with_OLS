@@ -1,9 +1,6 @@
 ---
-title: "Real Estate Price Prediction Using Elastic Net Regression Analysis"
-author: "Bedrock Stat Analytics"
-date: '`r paste(" ", Sys.Date())`'
 output: 
-  pdf_document:
+  html_document:
     fig_caption: yes
   pandoc_args: [
       "--number-sections",
@@ -38,11 +35,12 @@ h3 {
   }
 </style>
 
-```{r include=FALSE}
+```{r include=F}
 knitr::opts_chunk$set(comment = NA)
 ```
 
-```{r,echo=FALSE,warning=FALSE,message=FALSE, error=FALSE}
+
+```{r,echo=F,warning=F,message=F, error=F}
 library(caret)
 library(knitr)
 library(elasticnet)
@@ -52,18 +50,18 @@ library(xtable)
 library(kableExtra)
 ```
 
+
 ```{r,echo=F}
 dat <- params$dat_data
-name <- params$dat_file
 ``` 
-`r sprintf("Using Data file - %s.",name) `
 
-```{r cache=FALSE, echo=FALSE}
+```{r cache=F, echo=F}
 read_chunk('BEDROCK-ELASTICNET-LARS_TRIMMED.R')
 read_chunk('BEDROCK-HELP-FUNC.R')
 ```
 
-```{r, echo=FALSE}
+
+```{r, echo=F}
 # Load data file
 dat <- params$dat_data
 # read chunk (does not run code)
@@ -73,25 +71,23 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
 
 
-```{r check_data, results='asis', echo = F, warning=F, message=F}
-# Sumary of data quality checks 
-```
-
 
 # Summary Statistics
 ```{r  descriptive_stat, results='asis', echo = F, message=F}
 ```
-```{r  descriptive_stat_pdf_table, results='asis', echo = F, message=F}
-# Sumary of unscaled predictor (x) variables  
+```{r  descriptive_stat_html_table, results='asis', echo = F, message=F}
+# Summary of unscaled predictor (x) variables 
 ```
-```{r standardize_xy, echo=FALSE}
+```{r standardize_xy, echo=F}
 # standardiize xy variables
 ```
+
 
 # Correlations Between Predictors
 ```{r corr_plot, echo=F, fig.height=12,fig.width=12}
 # Plot the correlations between predictors
 ```
+
 
 # Tuning Parmenter Selection Using Leave-One-Out Cross Validation
 ```{r loocv, echo=F, warning = F, fig.width=7,fig.height=6}
@@ -104,32 +100,22 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 # Variable Importance
 ```{r var_importance,results='asis',echo=F,warning=F, fig.width=5,fig.height=5}
 ```
+`r sprintf("\nRank of variables by Importance using Caret R Package. All measures of importance are scaled to have a maximum value of 100.")`
 
-Rank of variables by Importance using Caret R Package. All measures of importance are scaled to have a maximum value of 100.
 
-# Standardized Model Coefficients
-```{r  best_model, echo = F}
+```{r  best_model, echo = F,warning = F}
 ```
-```{r  predict_coef, echo = F, results='asis', echo = FALSE}
-```
-```{r  coef_tble, echo = F, results='asis', echo = FALSE}
-```
-NOTE errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.
-
 
 # Model Prediction
 ```{r predict_price, echo = F, warning = F}
 ```
-```{r predict_price_pdf, results ='asis', echo = F, warning = F}
+```{r predict_price_html, echo = F, warning = F}
 ```
 
+# Standardized Model Coefficients
+```{r  coefficients_table, echo = F, warning = F}
+```
+```{r  coefficients_html_table, echo = F, warning = F}
+```
+`r sprintf("NOTE: errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.")`
 
-\blandscape 
-```{r, echo=FALSE}
-knitr::kable(dat, 
-             format = "latex",
-             booktabs = TRUE,
-             caption = "APPENDIX : Raw data table") %>%
-kableExtra::kable_styling(latex_options = c("repeat_header"), font_size = 7) 
-``` 
-\elandscape 
