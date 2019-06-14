@@ -1,3 +1,5 @@
+source("data_checks.R")
+
 shinyServer(function(input, output, session) {
   
   #**************************************************
@@ -29,6 +31,7 @@ shinyServer(function(input, output, session) {
         ## Applicatin name
         titlePanel("Bedrock Stat Analytics"),
         
+        ## Side bar
         sidebarLayout(
           sidebarPanel(
             fileInput("file1", "1. Upload the CSV Data File",
@@ -42,16 +45,17 @@ shinyServer(function(input, output, session) {
             br(),br(),br(),
             
             "3. Download the Report\n",
-            downloadButton("report","Download PDF")
+            downloadButton("bedrock_analytics_report","Download PDF")
             
           ),
           
-          # Main panel for displaying outputs 
+          ## Main panel for displaying outputs 
           mainPanel(
-            uiOutput('results')
-
+            # Output: Tabset for instructions, raw data and analysis results
+            tabsetPanel(id = "tabs",
+                        tabPanel("Instructions", pre(includeText("format.txt")))
+                        )
           )
-          
         )
       )
     }
@@ -60,99 +64,112 @@ shinyServer(function(input, output, session) {
   #**************************************************
   #  ANALYSIS Server code
   #**************************************************
-
-  # Get the data file
-  output$contents <- renderDataTable({
+  
+  ##########################
+  # 1. Load data file and check for formatting
+  ##########################
+  
+  # THE ERROR HANDLING IS NOT WORKKING! CHECK LATER!!!!
+  observeEvent(input$file1, {
     
+    # If data format is not correct show the error msg
+    if(!(valid_input_data(dat_file = input$file1$datapath))){
+      shinyjs::disable("analyze")
+      shinyjs::disable("bedrock_analytics_report")
+     
+      showModal(modalDialog(
+        title = "Error!",
+        "Uploaded data file contains errors. Please follow the guidelines given in the instructions page and upload a csv dat file with the correct format."
+      ))
+      
+    } else {
+
+     # data quality is good so show the data file in a new tab
+      insertTab(inputId = "tabs",
+                tabPanel("Input Data", DT::dataTableOutput("dtable")),
+                target = "Instructions",
+                position = "after"
+      )
+    }
+  })
+  
+   
+  # Reactive expression to get the datafile 
+  datasetInput <- reactive({
     req(input$file1)
+    
+    if(is.null(input$file1)) return(NULL)
     
     tryCatch({
       dataIn <- read.csv(input$file1$datapath,header = T)
-      df <- dataIn[1:(nrow(dataIn)-1),]
-        
+
     },
     error = function(e) {
-    # return a safeError if a parsing error occurs
+      # return a safeError if a parsing error occurs
       stop(safeError(e))
     })
-    return(df)
+    
   })
-  # 
-  # #check the regression type and assign the correct RMD 
+  
+  output$dtable <- DT::renderDataTable({
+    datasetInput()
+  })
+  
+
+  ###########
+  # 2. Run analysis
+  ###########
+  
+  #check the regression type and assign the correct RMD file
   reportType <- eventReactive(input$analyze, {
     # default
-    user_input$report <- "report_enet.Rmd"
+    user_input$report <- "report_enet_html.Rmd"
     # select based on user input
     if (req(input$reg_opt) == "Elasticnet (n<p)")
-      user_input$report <- "report_enet.Rmd"
+      user_input$report <- "report_enet_html.Rmd"
     if (req(input$reg_opt) == "OLS (n>p)")
       user_input$report <-"report_ols.Rmd"
   })
-  
-  # # updated when the analysis button is clicked
-  # reportType <- eventReactive(input$analyze, {
-  #   print("sdfsdfsdf")
-  #   
-  #   switch(input$tempReport,
-  #          "Elasticnet (n<p)" = "report_enet.Rmd",
-  #          "OLS (n>p)" = "report_ols.Rmd")
-  # }, ignoreNULL = FALSE)
-  
-  # observe({
-  #   if (req(input$reg_opt) == "Elasticnet (n<p)")
-  #     user_input$report <- "report_enet.Rmd"
-  #   if (req(input$reg_opt) == "OLS (n>p)")
-  #     user_input$report <-"report_ols.Rmd"
-  # 
-  # })
-  
+
+
+  # Analyze data when button is clicked.
   observeEvent(input$analyze, {
+    
+    GenerateReport()
+    
+    # insert a tab for results
+    insertTab(inputId = "tabs",
+              tabPanel("Results", includeHTML("report_enet_html.html")),
+              target = "Input Data",
+              position = "after"
+    )
+  })
+
+
+  # Generate report
+  GenerateReport <- reactive({
     # Set up parameters to pass to Rmd document
     dataIn <- read.csv(input$file1$datapath,header = T)
-    print(input$file1$datapath)
+    #print(input$file1$datapath)
     params <- list(dat_data = dataIn, dat_file = input$file1$name)
-    
-    reportType()    
+
+
+    reportType()
     tempReport <- user_input$report
     #tempReport <- reportType()
     #print(tempReport)
-    rmarkdown::render(tempReport,c("html_document", "pdf_document"), 
+    rmarkdown::render(tempReport,c("html_document", "pdf_document"),
                       params = params,
                       envir = new.env(parent = globalenv()))
 
   })
-  
-  output$results <- renderUI({
 
-    if(input$analyze){
-      # # Set up parameters to pass to Rmd document
-      # dataIn <- read.csv(input$file1$datapath,header = T)
-      # print(input$file1$datapath)
-      # params <- list(dat_data = dataIn, dat_file = input$file1$name)
-      # 
-      # reportType()    
-      # tempReport <- user_input$report
-      # #tempReport <- reportType()
-      # #print(tempReport)
-      # rmarkdown::render(tempReport,c("html_document", "pdf_document"), 
-      #                   params = params,
-      #                   envir = new.env(parent = globalenv()))
-      withMathJax()
-      #includeHTML("report_enet.html")
-      includeMarkdown("report_enet.Rmd")
-      
-    }else{
-      pre(includeText("format.txt"))
-    }
-
-  })
   
-  
-  output$report <- downloadHandler(
+  output$bedrock_analytics_report <- downloadHandler(
     filename = "bedrock_analytics_report.pdf",
     content = function(file) {
       # use file.copy to provide the file "in" the save-button
-      file.copy("/home/buddhini/MyWork/Upwork/R_bedrock_gui/shinyapp/NewAppInterface/report_enet.pdf", file)
+      file.copy("report_enet.pdf", file)
     }
   )
 
