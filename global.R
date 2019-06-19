@@ -1,5 +1,4 @@
 library(shiny)
-library(shinyjs)
 library(DT)
 library(caret) # Package to traint the model
 library(glmnet) # Package to fit ridge/lasso/elastic net models

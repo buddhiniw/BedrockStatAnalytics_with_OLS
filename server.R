@@ -40,7 +40,9 @@ shinyServer(function(input, output, session) {
                                  "text/comma-separated-values,text/plain",
                                  ".csv")),
             
-            selectInput("reg_opt","2. Select Regression Option & Run Analysis",c("Elasticnet (n<p)","OLS (n>p)")),
+            selectInput("regression",
+                        "2. Select Regression Option & Run Analysis",
+                        c("Elasticnet (n<p)"="enet","OLS (n>p)"="ols")),
             actionButton("analyze","Analyze"),
             br(),br(),br(),
             
@@ -120,24 +122,15 @@ shinyServer(function(input, output, session) {
   # 2. Run analysis
   ###########
   
-  #check the regression type and assign the correct RMD file
-  reportType <- eventReactive(input$analyze, {
-    # default
-    user_input$report <- "report_enet.Rmd"
-    user_input$htmlout <- "enet_html.Rmd"
-    
-    # select pdf/html layout based on user input
-    if (req(input$reg_opt) == "Elasticnet (n<p)"){
-      user_input$report <- "report_enet.Rmd"
-      user_input$htmlout <- "enet_html.Rmd"
-    }
-    if (req(input$reg_opt) == "OLS (n>p)"){
-      user_input$report <-"report_ols.Rmd"
-      user_input$htmlout <-"report_ols.Rmd"
-    }
+  # reactive value containing regression type
+  reg_input <- reactiveValues(
+    value = "enet" #default
+  )
+  
+  # pick the selected regressoin value from list
+  observeEvent(input$regression, {
+    reg_input$value <- input$regression
   })
-
-
   
   
   # Analyze data when button is clicked.
@@ -147,18 +140,24 @@ shinyServer(function(input, output, session) {
     
     # insert a tab for results
     insertTab(inputId = "tabs",
-              tabPanel("Results", includeHTML("enet_html.html")),
+              tabPanel("Results", includeHTML(paste0(reg_input$value,"_html.html"))),
               target = "Input Data",
               position = "after"
     )
   })
 
+  
+  
+  
+  
   # Generate html output
   generateHTML <- reactive({
+    
+    
     dataIn <- read.csv(input$file1$datapath,header = T)
-    params <- list(dat_data = dataIn, dat_file = input$file1$name)
-    reportType()
-    tempHTML <- user_input$htmlout
+    params <- list(dat_data =  datasetInput(), dat_file = input$file1$name)
+    tempHTML <- paste0(reg_input$value,"_html.Rmd")
+    #print(tempHTML)
     rmarkdown::render(tempHTML,
                       params = params,
                       envir = new.env(parent = globalenv()))
@@ -166,18 +165,18 @@ shinyServer(function(input, output, session) {
     
   })
 
+  
+  
   # Generate pdf report
   generateReport <- reactive({
     # Set up parameters to pass to Rmd document
     dataIn <- read.csv(input$file1$datapath,header = T)
-    #print(input$file1$datapath)
-    params <- list(dat_data = dataIn, dat_file = input$file1$name)
-
-
-    reportType()
-    tempReport <- user_input$report
-    #tempReport <- reportType()
-    #print(tempReport)
+    print(input$file1$datapath)
+    #params <- list(dat_data = dataIn, dat_file = input$file1$name)
+    params <- list(dat_data =  datasetInput(), dat_file = input$file1$name)
+    
+    tempReport <- paste0(reg_input$value,"_pdf.Rmd")
+    print(tempReport)
     rmarkdown::render(tempReport,"pdf_document",
                       params = params,
                       envir = new.env(parent = globalenv()))
@@ -191,7 +190,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       # use file.copy to provide the file "in" the save-button
       generateReport()
-      file.copy("report_enet.pdf", file)
+      file.copy(paste0(reg_input$value,"_pdf.pdf"), file)
     }
   )
 
@@ -202,7 +201,8 @@ shinyServer(function(input, output, session) {
   #**************************************************
   # reactive value containing user's authentication status
   user_input <- reactiveValues(authenticated = FALSE, valid_credentials = FALSE, 
-                               user_locked_out = FALSE, status = "", report="", htmlout="")
+                               user_locked_out = FALSE, status = "")
+  
   
   # dataframe that holds usernames, passwords and other user data
   user_db <- data.frame(

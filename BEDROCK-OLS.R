@@ -45,7 +45,7 @@ dataIn.full <- cbind(dataIn.y,dataIn.x)
 dataIn.test <- dataIn[nrow(dataIn),-1]
 x.test <-as.matrix(dataIn.test)
 
-## @knitr make_model
+## @knitr make_ols_model
 ###################################################################
 # Create a model
 ###################################################################
@@ -101,21 +101,9 @@ final.ols.model <- train.ols$finalModel
 
 
 # Get the model coefficients from the final model
-#beta.hat <- train.ols$finalModel
-## @knitr ols_coef
 beta.hat <- tidy(train.ols$finalModel)
-#kable(beta.hat)
-
-
 y.hat.ols <- predict(final.ols.model,as.data.frame(x.test))
 y.hat <- y.hat.ols
-
-# High multiclinarity
-# > vif(train.ols$finalModel)
-# SellingDate      SiteAreaSF GrossBldgAreaSF        OfficeSF   MezzanineYes1       YearBuilt   OverheadDoors 
-# 2.138700       64.831956       35.507707        4.799866        3.974049        1.907496        4.433765 
-# LandToBldgArea  PavedParkingSF       FenceYes1 
-# 22.701720        2.105330        3.018182 
 
 
 

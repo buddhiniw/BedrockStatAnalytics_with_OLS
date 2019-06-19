@@ -17,23 +17,7 @@ header-includes:
 params:
   dat_data: NA
   dat_file: NA
-
 ---
-<style type="text/css">
-
-h1.title {
-  font-size: 24px;
-  font-weight: normal;
-}
-h3 {
-  font-weight:normal;
-}
-.reveal section img { 
-  background:none; 
-  border:none; 
-  box-shadow:none; 
-  }
-</style>
 
 ```{r include=F}
 knitr::opts_chunk$set(comment = NA)
@@ -48,28 +32,27 @@ library(DMwR)
 library(prettyR)
 library(xtable)
 library(kableExtra)
+library(broom)
 ```
-
 
 ```{r,echo=F}
 dat <- params$dat_data
 ``` 
 
 ```{r cache=F, echo=F}
-read_chunk('BEDROCK-ELASTICNET-LARS_TRIMMED.R')
+read_chunk('BEDROCK-OLS.R')
 read_chunk('BEDROCK-HELP-FUNC.R')
 ```
-
 
 ```{r, echo=F}
 # Load data file
 dat <- params$dat_data
 # read chunk (does not run code)
 dataIn <- dat
+dataIn <- dataIn[ , !names(dataIn) %in% c("MezzanineYes1")]
 indx <- sapply(dataIn, is.factor)
 dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
-
 
 
 # Summary Statistics
@@ -83,28 +66,26 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
 
 
+```{r ols_preprocess, echo=FALSE}
+# Pre-process
+```
+
 # Correlations Between Predictors
-```{r corr_plot, echo=F, fig.height=12,fig.width=12}
+```{r ols_cor_plot, echo=F, fig.height=12,fig.width=12}
 # Plot the correlations between predictors
 ```
 
-
-# Tuning Parmenter Selection Using Leave-One-Out Cross Validation
-```{r loocv, echo=F, warning = F, fig.width=7,fig.height=6}
-# results from Loocv
-```
-`r sprintf("From above plot, lambda =%.2f and s =%.2f gives the minimum RMSE model."
-                        ,best.lambda, best.fraction) `
-
-
 # Variable Importance
-```{r var_importance,results='asis',echo=F,warning=F, fig.width=5,fig.height=5}
+```{r  make_ols_model, echo = F,fig.width=5,fig.height=5}
 ```
-`r sprintf("\nRank of variables by Importance using Caret R Package. All measures of importance are scaled to have a maximum value of 100.")`
+```{r var_importance, echo=F,fig.height=10,fig.width=10}
+# get varible importance
+```
 
 
-```{r  best_model, echo = F,warning = F}
+```{r  best_model, echo = F}
 ```
+
 
 # Model Prediction
 ```{r predict_price, echo = F, warning = F}
@@ -113,11 +94,10 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 ```
 
 # Standardized Model Coefficients
-```{r  enet_coeff, echo = F, warning = F}
+```{r  ols_coeff, echo = F}
 ```
-```{r  enet_coeff_html_table, echo = F, warning = F}
+```{r  ols_coeff_html_table, results ='asis', echo = F}
 ```
-`r sprintf("NOTE: errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.")`
 
 
 

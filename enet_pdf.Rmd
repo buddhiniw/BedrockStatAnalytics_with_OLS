@@ -107,15 +107,15 @@ dataIn[indx] <- lapply(dataIn[indx], function(x) as.numeric(x))
 
 Rank of variables by Importance using Caret R Package. All measures of importance are scaled to have a maximum value of 100.
 
-# Standardized Model Coefficients
 ```{r  best_model, echo = F}
 ```
-```{r  predict_coef, echo = F, results='asis', echo = FALSE}
+
+# Standardized Model Coefficients
+```{r  enet_coeff, echo = F, results='asis', echo = FALSE}
 ```
-```{r  coef_tble, echo = F, results='asis', echo = FALSE}
+```{r  enet_coeff_pdf_table, echo = F, results='asis', echo = FALSE}
 ```
 NOTE errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.
-
 
 # Model Prediction
 ```{r predict_price, echo = F, warning = F}

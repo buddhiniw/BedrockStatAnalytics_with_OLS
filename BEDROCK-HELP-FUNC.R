@@ -15,7 +15,6 @@ library(broom)
 options(knitr.table.format = "html") 
 
 
-
 ## @knitr descriptive_stat
 ###################################################################
 # Descriptive statistics from unscaled data
@@ -44,30 +43,61 @@ kable(data.t)%>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 ###################################################################
-# Make predictions using the final model selected by caret
+# Coefficients
 ###################################################################
 
-## @knitr coefficients_table
+# @knitr coefficients_table
+## @knitr enet_coeff
 data.c <- as.matrix(beta.hat$coefficients)
 data.c <- formatC(data.c, digits = 3, format = "f", flag = "0")
 colnames(data.c) <- c("Estimate")
 bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
 
-## @knitr coefficients_html_table
+## @knitr enet_coeff_pdf_table
+data.c <- formatC(data.c, digits = 3, format = "f", flag = "0")
+colnames(data.c) <- c("Estimate")
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.c,
+             align = "|l|r|"),
+      comment=FALSE,
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold,
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
+
+## @knitr enet_coeff_html_table
 kable(data.c)%>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 
-## @knitr ols_coef_tble
+## @knitr ols_coeff
 data.c <- as.matrix(beta.hat)
 data.c <- formatC(data.c, digits = 3, format = "f", flag = "0")
 #colnames(data.c) <- c("Estimate")
 bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
-## @knitr ols_coef_tble
-kable(data.c,format = "markdown")
+
+## @knitr ols_coeff_html_table
+kable(data.c)%>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+## @knitr ols_coeff_pdf_table
+data.t <- as.matrix(data.c)
+data.t <- formatC(data.t, digits = 2, format = "d", flag = "0")
+colnames(data.t) <- c("Term", "Estimate", "Std. Error.", "Statistic","P Value")
+bold <- function(x) {paste('{\\textbf{',x,'}}', sep ='')}
+print(xtable(data.t,
+             align = "|l|r|r|r|r|r|"),
+      comment=FALSE,
+      sanitize.colnames.function=bold,
+      sanitize.rownames.function=bold,
+      booktabs=F,
+      floating = TRUE, latex.environments = "center")
 
 
-# Predicted Price
+###################################################################
+# Predicte Price
+###################################################################
+
 ## @knitr predict_price
 data.p <- as.matrix(cbind(y.hat,prediction.error, prediction.rsquared))
 data.p <- formatC(data.p, digits = 3, format = "f", flag = "0")

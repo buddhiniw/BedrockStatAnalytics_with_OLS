@@ -24,7 +24,8 @@ library(knitr)
 # Clean up the directory
 rm(list=ls())
 
-#dataIn <- read.csv(file='/home/buddhini/MyWork/Upwork/R_bedrock_gui/data/Church.csv')
+# Below code was used for debugging purposes
+# dataIn <- read.csv(file='/home/buddhini/MyWork/Upwork/R_bedrock_gui/data/Church.csv')
 
 
 ## @knitr standardize_xy
