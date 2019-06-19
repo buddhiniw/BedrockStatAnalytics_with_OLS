@@ -1,0 +1,27 @@
+GUIDELINES ON THE INPUT CSV FILE
+
+The Input CSV data file should have the following format,
+  
+  1. Comma seperated columns with first column being the dependent variable (e.g. Price/Rent ) and the rest being the Independent Variables.
+  
+  2. Last row of the data file should have the data required to make the prediction.
+
+
+ PLEASE NOTE: If using Excel to convert data to csv format please take note of the following suggestion to avoid complications when being used with this application.
+ 
+   If a cell contains an equation to calculate a variable datum, the column of cell should be copied and pasted to another column as values and the column containing equations deleted. The new file with equations removed,should be saved as a CSV file. In other words, a CSV file SHALL Not contain equations.
+   
+   
+   
+   
+Following is an example of a valid input csv data file format used by this application:
+
+SellingPrice ,SellingDate,SiteAreaSF,GrossBldgAreaSF,OfficeSF,MezzanineYes1
+128000,42123, 8148,2976,1200,0
+ 49500,41760,11505,3200,1040,1
+163000,41808,10320,2880, 547,0
+122750,40555, 6120,3500, 500,0
+255000,40787,14015,5400,1196,0
+      ,42852,37500,5000,1400,1
+ 
+ 
