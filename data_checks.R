@@ -3,54 +3,60 @@
 ###################################################################
 valid_input_data<- function(dat_file){
 
-  # Set some data check flags
-  #flagPriceColNotFirst = FALSE
-  flagLastRowNAData = FALSE
+  # Default flags
   flagNotEnoughData = FALSE
-  flagMissingData = FALSE
+  flagMissingTestData = FALSE
+  flagMissingPredData = FALSE
+  flagMissingPredPrice = FALSE
   flagDataQualityGood = TRUE
   
-  # Remove all rows with all NAs
+  # Read data file
   dataIn <- read.csv(dat_file,header = T)
-  dataIn <- dataIn[!(rowSums(is.na(dataIn))==ncol(dataIn)),]
+  
+  # Remove rows with all NAs
+  ind <- apply(dataIn, 1, function(x) all(is.na(x)))
+  dataIn <- dataIn[!ind,]
+  
+  #dataIn <- dataIn[!(rowSums(is.na(dataIn))==ncol(dataIn)),]
   
   # Check to see if there is enough data
-  if(NROW(dataIn)<2){ # 1 row of data cannot be used for prediction
+  # There should be at least 3 rows of test data to run this app
+  if(NROW(dataIn)<3){ 
     flagNotEnoughData = TRUE
   }
   
-  # Check data file format. First column should be the Dependant variable (DV), the rest Independant variables (IV)
+  # Define NotIn function
   '%ni%' <- Negate('%in%') # Define NotIn 
-  # if("SellingPrice" %ni% colnames(dataIn)){
-  #   # 1) First check if SellingPrice is there. If not quit.
-  #   cat("Unable to find 'SellingPrice'. Check the data file.\n");
-  #   flagMissingPrice = TRUE
-  # } else 
-  # if ('SellingPrice' %ni% colnames(dataIn)[1]){ 
-  #   # 2) Next check if SellingPrice is the first column, if not quit.
-  #   cat("'SellingPrice' should be the first column in dataframe. Check the data file.\n");
-  #   flagPriceColNotFirst = TRUE
-  # } else 
-    
-  if(rowSums(is.na(dataIn))>1){
-    # 3) Check to see if the last row contains data for prediction. SellingPrice should be the only NA there
-    cat("There is more than 1 missing data value in the last row containing the data used for rediction.\n");
-    flagLastRowNAData = TRUE
+
+  #########################################
+  # Check data file format. 
+  # First column should be the Dependant variable (DV). The rest Independant variables (IV)
+  # Last row should have N/A for price/rent to be predicted. 
+  # The rest of the rows should have test data to train the model
+  ##########################################
+  # Are there N/A in the test data (all rows except last one) ?
+  if(sum(colSums(is.na(dataIn[1:nrow(dataIn)-1,]))!=0)){
+    cat("There are missing data in the test data set.\n");
+    flagMissingTestData = TRUE
   }
   
-  # Last row contains the data to be used for prediction. So it will have NA for the price. Therefore skip the last 
-  # row when checking for NA's in indicidual IVs
-  null.row <- rowSums(is.na(dataIn))
-  
-  if(all(colSums(is.na(dataIn[1:nrow(dataIn)-1,]))!=0)){
-    cat("There are missing data.\n");
-    flagMissingData = TRUE
+  # Are there N/A in the data used for prediction (except in price/rent)?
+  if(sum(rowSums(is.na(dataIn[,2:ncol(dataIn)]))!=0)){
+    cat("There are missing data in the predict data set\n.");
+    flagMissingPredData = TRUE
   }
   
-  if(flagNotEnoughData || flagLastRowNAData || flagMissingData){
+  # Is there a N/A for price/rent in the last row (We need N/A there to predic price/rent)?
+  if(is.na(dataIn[nrow(dataIn),1]) != TRUE){
+    cat("There is something wrong with the predic data set (last row)\n.");
+    flagMissingPredPrice = TRUE
+  }
+  
+
+  # Calculate the quality status
+  if(flagNotEnoughData || flagMissingTestData || flagMissingPredData || flagMissingPredPrice ){
     cat("Failed input data quality check. See output summary for details.")
     flagDataQualityGood = FALSE
-    #quit()
   }
   
   return (flagDataQualityGood)

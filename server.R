@@ -8,11 +8,13 @@ shinyServer(function(input, output, session) {
   
   # for code development.
   output$ui <- renderUI({
+    
     if (user_input$authenticated == FALSE) {
-      
+
       ##### Login Interface
       fluidPage(
-        
+        #theme = shinytheme("cosmo"),
+
         ## Applicatin name
         titlePanel("Bedrock Stat Analytics"),
        
@@ -27,6 +29,8 @@ shinyServer(function(input, output, session) {
     } else {
       #### Apps Interface
       fluidPage(
+       #theme = shinytheme("cosmo"),
+       #shinythemes::themeSelector(),  # <--- Add this somewhere in the UI
         
         ## Applicatin name
         titlePanel("Bedrock Stat Analytics"),
@@ -71,7 +75,6 @@ shinyServer(function(input, output, session) {
   # 1. Load data file and check for formatting
   ##########################
   
-  # THE ERROR HANDLING IS NOT WORKKING! CHECK LATER!!!!
   observeEvent(input$file1, {
     
     # If data format is not correct show the error msg
@@ -79,10 +82,12 @@ shinyServer(function(input, output, session) {
       shinyjs::disable("analyze")
       shinyjs::disable("bedrock_analytics_report")
      
-      showModal(modalDialog(
-        title = "Error!",
-        "Uploaded data file contains errors. Please follow the guidelines given in the instructions page and upload a csv dat file with the correct format."
-      ))
+      showModal(
+        modalDialog(
+          title = "Error!",
+          "Uploaded data file contains errors. Please follow the guidelines given in the Instructions tab and upload a csv dat file with the correct format."
+        )
+      )
       
     } else {
 

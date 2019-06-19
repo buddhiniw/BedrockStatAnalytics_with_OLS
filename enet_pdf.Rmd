@@ -110,18 +110,18 @@ Rank of variables by Importance using Caret R Package. All measures of importanc
 ```{r  best_model, echo = F}
 ```
 
+# Model Prediction
+```{r predict_price, echo = F, warning = F}
+```
+```{r predict_price_pdf, results ='asis', echo = F, warning = F}
+```
+
 # Standardized Model Coefficients
 ```{r  enet_coeff, echo = F, results='asis', echo = FALSE}
 ```
 ```{r  enet_coeff_pdf_table, echo = F, results='asis', echo = FALSE}
 ```
 NOTE errors are not given for the predicted coefficients since it is yet unclear how meaningful the std. errors are in penalized regression.
-
-# Model Prediction
-```{r predict_price, echo = F, warning = F}
-```
-```{r predict_price_pdf, results ='asis', echo = F, warning = F}
-```
 
 
 \blandscape 
